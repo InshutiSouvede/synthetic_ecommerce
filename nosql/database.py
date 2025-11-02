@@ -18,38 +18,80 @@ async def connect_to_mongo():
     """Create database connection"""
     try:
         mongodb_url = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
-        connection_options = {
-            "serverSelectionTimeoutMS": 30000,
-            "connectTimeoutMS": 30000,
-            "socketTimeoutMS": 30000,
-            "maxPoolSize": 10,
-            "minPoolSize": 1,
-            "retryWrites": True,
-        }
         
+        # Try multiple connection strategies for Atlas
         if "mongodb+srv://" in mongodb_url or "ssl=true" in mongodb_url:
-            connection_options.update({
-                "tls": True,
-                "tlsAllowInvalidCertificates": True,
-                "tlsAllowInvalidHostnames": True,
-                "authSource": "admin",
-                "w": "majority"
-            })
-
-            try:
-                db.client = AsyncIOMotorClient(mongodb_url, **connection_options)
-                await db.client.admin.command('ping')
-                print("Connected to MongoDB Atlas without ServerApi")
-            except Exception as e1:
-                print(f"First connection attempt failed: {e1}")
+            connection_strategies = [
+                # Strategy 1: Minimal SSL with certificate verification disabled
+                {
+                    "serverSelectionTimeoutMS": 30000,
+                    "connectTimeoutMS": 30000,
+                    "socketTimeoutMS": 30000,
+                    "maxPoolSize": 10,
+                    "minPoolSize": 1,
+                    "retryWrites": True,
+                    "tls": True,
+                    "tlsAllowInvalidCertificates": True,
+                    "tlsAllowInvalidHostnames": True,
+                    "authSource": "admin",
+                },
+                # Strategy 2: Direct SSL with TLS insecure
+                {
+                    "serverSelectionTimeoutMS": 20000,
+                    "connectTimeoutMS": 20000,
+                    "socketTimeoutMS": 20000,
+                    "maxPoolSize": 5,
+                    "retryWrites": True,
+                    "ssl": True,
+                    "tlsInsecure": True,
+                    "authSource": "admin",
+                },
+                # Strategy 3: No explicit TLS (let MongoDB handle it)
+                {
+                    "serverSelectionTimeoutMS": 15000,
+                    "connectTimeoutMS": 15000,
+                    "socketTimeoutMS": 15000,
+                    "maxPoolSize": 5,
+                    "retryWrites": True,
+                    "authSource": "admin",
+                }
+            ]
+            
+            for i, options in enumerate(connection_strategies, 1):
                 try:
-                    db.client = AsyncIOMotorClient(mongodb_url, server_api=ServerApi('1'), **connection_options)
+                    print(f"Attempting connection strategy {i}...")
+                    db.client = AsyncIOMotorClient(mongodb_url, **options)
                     await db.client.admin.command('ping')
-                    print("Connected to MongoDB Atlas with ServerApi")
-                except Exception as e2:
-                    print(f"ServerApi connection also failed: {e2}")
-                    raise e2
+                    print(f"Successfully connected using strategy {i}!")
+                    break
+                except Exception as e:
+                    print(f"Strategy {i} failed: {str(e)[:100]}...")
+                    if i == len(connection_strategies):
+                        # Last strategy failed, try with ServerApi as final attempt
+                        try:
+                            print("Trying final attempt with ServerApi...")
+                            final_options = {
+                                "serverSelectionTimeoutMS": 10000,
+                                "connectTimeoutMS": 10000,
+                                "socketTimeoutMS": 10000,
+                                "retryWrites": True,
+                            }
+                            db.client = AsyncIOMotorClient(mongodb_url, server_api=ServerApi('1'), **final_options)
+                            await db.client.admin.command('ping')
+                            print("Connected with ServerApi!")
+                            break
+                        except Exception as final_e:
+                            raise Exception(f"All connection strategies failed. Last error: {final_e}")
         else:
+            # Local MongoDB connection
+            connection_options = {
+                "serverSelectionTimeoutMS": 30000,
+                "connectTimeoutMS": 30000,
+                "socketTimeoutMS": 30000,
+                "maxPoolSize": 10,
+                "minPoolSize": 1,
+                "retryWrites": True,
+            }
             db.client = AsyncIOMotorClient(mongodb_url, **connection_options)
             await db.client.admin.command('ping')
         
@@ -58,11 +100,8 @@ async def connect_to_mongo():
         
     except Exception as e:
         print(f"Warning: Failed to connect to MongoDB: {e}")
-        print("The API will still start but database operations will fail.")
         if "mongodb+srv://" in os.getenv("MONGODB_URL", ""):
-            print("Please check your MongoDB Atlas connection string and network access settings.")
-        else:
-            print("Please ensure MongoDB is running on mongodb://localhost:27017")
+            print("6. Try adding '?retryWrites=true&w=majority&tlsAllowInvalidCertificates=true' to your connection string")
 
 async def close_mongo_connection():
     """Close database connection"""
