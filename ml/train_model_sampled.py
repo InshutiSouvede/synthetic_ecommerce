@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
-import pickle
+import joblib
 
 # Set sample size for faster training
 SAMPLE_SIZE = 50000  # Use 50k reviews for training
@@ -67,7 +67,7 @@ print(f"Test set size: {len(X_test)}")
 
 # Initialize and train the model
 print("\nTraining Random Forest model...")
-model = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
+model = RandomForestRegressor(n_estimators=50, random_state=42, n_jobs=-1)
 model.fit(X_train, y_train)
 
 # Make predictions on test set
@@ -93,10 +93,9 @@ encoders = {
     'country': le_country
 }
 
-with open('model.pkl', 'wb') as f:
-    pickle.dump((model, encoders), f)
+joblib.dump((model, encoders), 'model.pkl', compress=3)
 
-print('\nModel and encoders saved to model.pkl')
+print('\nModel and encoders saved to model.pkl (with compression)')
 print(f'\nEncoder details:')
 print(f'- Categories: {len(le_category.classes_)} unique values')
 print(f'- Brands: {len(le_brand.classes_)} unique values')

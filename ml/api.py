@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import pandas as pd
-import pickle
+import joblib
 import requests
 
 # Pydantic models for request/response
@@ -67,8 +67,7 @@ NOSQL_API_URL = "https://synthetic-ecommerce-a31h.onrender.com"
 
 # Load the model and encoders
 print("Loading model...")
-with open('model.pkl', 'rb') as f:
-    model, encoders = pickle.load(f)
+model, encoders = joblib.load('model.pkl')
 print("Model loaded successfully!")
 
 # ============================================================================
