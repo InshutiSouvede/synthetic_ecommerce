@@ -1,5 +1,6 @@
 *.env
 *.local
+*/__pycache__
 # Ignore datasets and model binaries
 data/
 *.zip
