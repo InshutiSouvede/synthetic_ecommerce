@@ -1,14 +1,15 @@
 from sqlalchemy.orm import Session
-from app import models, schemas
+from app.models import OrderItem
+from app import schemas
 
 def get_order_items(db: Session):
-    return db.query(models.OrderItem).all()
+    return db.query(OrderItem).all()
 
 def get_order_item(db: Session, order_item_id: int):
-    return db.query(models.OrderItem).filter(models.OrderItem.order_item_id == order_item_id).first()
+    return db.query(OrderItem).filter(OrderItem.order_item_id == order_item_id).first()
 
 def create_order_item(db: Session, order_item: schemas.OrderItemCreate):
-    db_item = models.OrderItem(**order_item.dict())
+    db_item = OrderItem(**order_item.dict())
     db.add(db_item)
     db.commit()
     db.refresh(db_item)

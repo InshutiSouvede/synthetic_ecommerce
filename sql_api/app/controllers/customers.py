@@ -1,14 +1,15 @@
 from sqlalchemy.orm import Session
-from app import models, schemas
+from app.models import Customer
+from app import schemas
 
 def get_customers(db: Session):
-    return db.query(models.Customer).all()
+    return db.query(Customer).all()
 
 def get_customer(db: Session, customer_id: int):
-    return db.query(models.Customer).filter(models.Customer.customer_id == customer_id).first()
+    return db.query(Customer).filter(Customer.customer_id == customer_id).first()
 
 def create_customer(db: Session, customer: schemas.CustomerCreate):
-    db_customer = models.Customer(**customer.dict())
+    db_customer = Customer(**customer.dict())
     db.add(db_customer)
     db.commit()
     db.refresh(db_customer)
