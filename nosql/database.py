@@ -29,9 +29,9 @@ async def connect_to_mongo():
         
         if "mongodb+srv://" in mongodb_url or "ssl=true" in mongodb_url:
             connection_options.update({
-                "ssl": True,
-                "ssl_cert_reqs": "CERT_NONE",
-                "ssl_match_hostname": False,
+                "tls": True,
+                "tlsAllowInvalidCertificates": True,
+                "tlsAllowInvalidHostnames": True,
                 "authSource": "admin",
                 "w": "majority"
             })
