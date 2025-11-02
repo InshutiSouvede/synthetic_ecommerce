@@ -109,7 +109,6 @@ async def connect_to_mongo():
         print(f"Warning: Failed to connect to MongoDB: {e}")
 
 async def close_mongo_connection():
-    """Close database connection"""
     if db.client:
         db.client.close()
         print("Disconnected from MongoDB!")
