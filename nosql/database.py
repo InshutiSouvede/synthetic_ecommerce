@@ -19,7 +19,7 @@ async def get_database() -> AsyncIOMotorClient:
 async def connect_to_mongo():
     """Create database connection"""
     try:
-        mongodb_url = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+        mongodb_url = "mongodb+srv://root:n61n27ctdAinO8ex@cluster0.joenmsm.mongodb.net/?appName=Cluster0"
         
         if "mongodb+srv://" in mongodb_url or "ssl=true" in mongodb_url:
             connection_strategies = [
@@ -107,8 +107,6 @@ async def connect_to_mongo():
         
     except Exception as e:
         print(f"Warning: Failed to connect to MongoDB: {e}")
-        if "mongodb+srv://" in os.getenv("MONGODB_URL", ""):
-            print("6. Try adding '?retryWrites=true&w=majority&tlsAllowInvalidCertificates=true' to your connection string")
 
 async def close_mongo_connection():
     """Close database connection"""
