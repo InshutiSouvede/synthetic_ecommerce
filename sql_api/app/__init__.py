@@ -1,1 +1,1 @@
-from . import models, schemas, database
+"""E-Commerce API application package."""
