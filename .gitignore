@@ -5,6 +5,5 @@
 data/
 *.zip
 *.csv
-*.pkl
 __pycache__/
 .ipynb_checkpoints/
