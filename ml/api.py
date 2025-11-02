@@ -39,11 +39,6 @@ class PredictionResponse(BaseModel):
 class ErrorResponse(BaseModel):
     error: str
 
-class HealthResponse(BaseModel):
-    status: str
-    model_loaded: bool
-    databases: dict
-
 # FastAPI app with built-in OpenAPI/Swagger
 app = FastAPI(
     title="E-Commerce Rating Prediction API",
@@ -289,28 +284,7 @@ def home():
                     'product_id': 1,
                     'customer_id': 1
                 }
-            },
-            '/health': {
-                'method': 'GET',
-                'description': 'Check API health'
             }
-        }
-    }
-
-@app.get(
-    "/health",
-    tags=["Health"],
-    response_model=HealthResponse,
-    summary="Health Check",
-    description="Check API health status"
-)
-def health():
-    return {
-        'status': 'healthy',
-        'model_loaded': True,
-        'databases': {
-            'sql': SQL_API_URL,
-            'nosql': NOSQL_API_URL
         }
     }
 

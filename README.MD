@@ -1,4 +1,6 @@
-#Quick links
-LIVE SQL API Documentation: https://synthetic-ecommerce.onrender.com/docs
-LIVE NOSQL(MONGO DB) API Documentation: https://synthetic-ecommerce-a31h.onrender.com/docs
-LIVE PREDICTION API Documentation: https://synthetic-ecommerce-ygqy.onrender.com/docs
+## Quick links
+**LIVE SQL API Documentation:** https://synthetic-ecommerce.onrender.com/docs
+
+**LIVE NOSQL(MONGO DB) API Documentation:** https://synthetic-ecommerce-a31h.onrender.com/docs
+
+**LIVE PREDICTION API Documentation:** https://synthetic-ecommerce-ygqy.onrender.com/docs
