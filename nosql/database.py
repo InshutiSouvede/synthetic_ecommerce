@@ -1,6 +1,8 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
 import os
+import ssl
+import certifi
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,10 +21,8 @@ async def connect_to_mongo():
     try:
         mongodb_url = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
         
-        # Try multiple connection strategies for Atlas
         if "mongodb+srv://" in mongodb_url or "ssl=true" in mongodb_url:
             connection_strategies = [
-                # Strategy 1: Minimal SSL with certificate verification disabled
                 {
                     "serverSelectionTimeoutMS": 30000,
                     "connectTimeoutMS": 30000,
@@ -35,7 +35,6 @@ async def connect_to_mongo():
                     "tlsAllowInvalidHostnames": True,
                     "authSource": "admin",
                 },
-                # Strategy 2: Direct SSL with TLS insecure
                 {
                     "serverSelectionTimeoutMS": 20000,
                     "connectTimeoutMS": 20000,
@@ -46,7 +45,16 @@ async def connect_to_mongo():
                     "tlsInsecure": True,
                     "authSource": "admin",
                 },
-                # Strategy 3: No explicit TLS (let MongoDB handle it)
+                {
+                    "serverSelectionTimeoutMS": 15000,
+                    "connectTimeoutMS": 15000,
+                    "socketTimeoutMS": 15000,
+                    "maxPoolSize": 5,
+                    "retryWrites": True,
+                    "tls": True,
+                    "tlsCAFile": certifi.where(),
+                    "authSource": "admin",
+                },
                 {
                     "serverSelectionTimeoutMS": 15000,
                     "connectTimeoutMS": 15000,
@@ -83,7 +91,6 @@ async def connect_to_mongo():
                         except Exception as final_e:
                             raise Exception(f"All connection strategies failed. Last error: {final_e}")
         else:
-            # Local MongoDB connection
             connection_options = {
                 "serverSelectionTimeoutMS": 30000,
                 "connectTimeoutMS": 30000,
