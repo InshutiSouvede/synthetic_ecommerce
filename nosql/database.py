@@ -18,32 +18,44 @@ async def connect_to_mongo():
     """Create database connection"""
     try:
         mongodb_url = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
-        
-        
         connection_options = {
-            "serverSelectionTimeoutMS": 10000, 
-            "connectTimeoutMS": 10000,
-            "socketTimeoutMS": 20000,
+            "serverSelectionTimeoutMS": 30000,
+            "connectTimeoutMS": 30000,
+            "socketTimeoutMS": 30000,
             "maxPoolSize": 10,
             "minPoolSize": 1,
+            "retryWrites": True,
         }
         
-        if "mongodb+srv://" in mongodb_url:
+        if "mongodb+srv://" in mongodb_url or "ssl=true" in mongodb_url:
             connection_options.update({
-                "tls": True,
-                "tlsAllowInvalidCertificates": True,
-                "tlsAllowInvalidHostnames": True,
-                "retryWrites": True,
+                "ssl": True,
+                "ssl_cert_reqs": "CERT_NONE",
+                "ssl_match_hostname": False,
+                "authSource": "admin",
                 "w": "majority"
             })
-            db.client = AsyncIOMotorClient(mongodb_url, server_api=ServerApi('1'), **connection_options)
+
+            try:
+                db.client = AsyncIOMotorClient(mongodb_url, **connection_options)
+                await db.client.admin.command('ping')
+                print("Connected to MongoDB Atlas without ServerApi")
+            except Exception as e1:
+                print(f"First connection attempt failed: {e1}")
+                try:
+                    db.client = AsyncIOMotorClient(mongodb_url, server_api=ServerApi('1'), **connection_options)
+                    await db.client.admin.command('ping')
+                    print("Connected to MongoDB Atlas with ServerApi")
+                except Exception as e2:
+                    print(f"ServerApi connection also failed: {e2}")
+                    raise e2
         else:
             db.client = AsyncIOMotorClient(mongodb_url, **connection_options)
+            await db.client.admin.command('ping')
         
         db.database = db.client[os.getenv("DATABASE_NAME", "ecommerce_db")]
-
-        await db.client.admin.command('ping')
         print("Successfully connected to MongoDB!")
+        
     except Exception as e:
         print(f"Warning: Failed to connect to MongoDB: {e}")
         print("The API will still start but database operations will fail.")
