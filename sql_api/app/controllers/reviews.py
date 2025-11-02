@@ -1,14 +1,15 @@
 from sqlalchemy.orm import Session
-from app import models, schemas
+from app.models import ProductReview
+from app import schemas
 
 def get_reviews(db: Session):
-    return db.query(models.ProductReview).all()
+    return db.query(ProductReview).all()
 
 def get_review(db: Session, review_id: int):
-    return db.query(models.ProductReview).filter(models.ProductReview.review_id == review_id).first()
+    return db.query(ProductReview).filter(ProductReview.review_id == review_id).first()
 
 def create_review(db: Session, review: schemas.ProductReviewCreate):
-    db_review = models.ProductReview(**review.dict())
+    db_review = ProductReview(**review.dict())
     db.add(db_review)
     db.commit()
     db.refresh(db_review)

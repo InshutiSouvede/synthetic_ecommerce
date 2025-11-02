@@ -1,1 +1,1 @@
-from . import customers, products, orders, order_items, reviews
+"""Controllers package."""
